@@ -34,6 +34,7 @@
 
 MSG_FILE=$1
 COMMIT_MSG=$(cat "$MSG_FILE")
+COMMIT_MSG=$(echo "$COMMIT_MSG" | tr -d '\r')  # CRLF -> LF
 
 # ---------- 1. Проверка типа коммита ----------
 ALLOWED_TYPES="fix|refactor|test|docs"
