@@ -54,6 +54,11 @@ fi
 MESSAGE_BODY=$(echo "$COMMIT_MSG" | sed -E "s/^($ALLOWED_TYPES):\ \[OSG-[0-9]+\]//")
 BAD_MESSAGES=("fix bug" "do smth" "test" "update" "temp" "misc")
 
+if [[ -z "${MESSAGE_BODY}" || "${MESSAGE_BODY}" =~ ^[[:space:]]*$ ]]; then
+     echo "Ошибка: кажется, вы забыли написать пояснительный текст к коммиту"
+     exit 1
+fi
+
 for bad in "${BAD_MESSAGES[@]}"; do
     if [[ "${MESSAGE_BODY,,}" == "$bad" ]]; then
         echo "Ошибка: сообщение коммита слишком общое/неинформативное: \"$MESSAGE_BODY\""
