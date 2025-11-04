@@ -37,7 +37,7 @@ COMMIT_MSG=$(cat "$MSG_FILE")
 COMMIT_MSG=$(echo "$COMMIT_MSG" | tr -d '\r')  # CRLF -> LF
 
 # ---------- 1. Проверка типа коммита ----------
-ALLOWED_TYPES="fix|refactor|test|docs"
+ALLOWED_TYPES="fix|refactor|test"
 
 if ! [[ $COMMIT_MSG =~ ^($ALLOWED_TYPES): ]]; then
     echo "Ошибка: сообщение коммита должно начинаться с одного из типов: fix:, refactor:, test:, docs:"
