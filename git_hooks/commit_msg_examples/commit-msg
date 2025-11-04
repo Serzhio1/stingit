@@ -51,7 +51,7 @@ if ! [[ $COMMIT_MSG =~ ^($ALLOWED_TYPES):\ \[OSG-[0-9]+\] ]]; then
 fi
 
 # ---------- 3. Проверка содержательности сообщения ----------
-MESSAGE_BODY=$(echo "$COMMIT_MSG" | sed -E "s/^($ALLOWED_TYPES):\ \[OSG-[0-9]+\]\ //")
+MESSAGE_BODY=$(echo "$COMMIT_MSG" | sed -E "s/^($ALLOWED_TYPES):\ \[OSG-[0-9]+\]//")
 BAD_MESSAGES=("fix bug" "do smth" "test" "update" "temp" "misc")
 
 for bad in "${BAD_MESSAGES[@]}"; do
