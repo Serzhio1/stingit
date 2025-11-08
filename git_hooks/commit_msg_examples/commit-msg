@@ -32,39 +32,99 @@
 #
 # ============================================================
 
+
+# Переменные, в которых не стоит менять значения
 MSG_FILE=$1
-COMMIT_MSG=$(cat "$MSG_FILE")
-COMMIT_MSG=$(echo "$COMMIT_MSG" | tr -d '\r')  # CRLF -> LF
+ROW_COMMIT_MSG=$(cat "$MSG_FILE")
+COMMIT_MSG=$(echo "$ROW_COMMIT_MSG" | tr -d '\r')  # CRLF -> LF
+
+# Переменные, в которых без проблем можно поменять значения на свой взгляд
+ALLOWED_COMMIT_TYPES="fix|refactor|test"
+PREFIX_TASK_NAME="OSG"
+EXAMPLE_GOOD_COMMIT_MESSAGE="Пример хорошего коммита «fix: [${PREFIX_TASK_NAME}-1194] для 1С реализовал метод 'calculateDevSalary()', который увеличивает зарплату программистам вдвое»"
+BAD_BODY_COMMIT_MESSAGES=("fix bug" "do smth" "test" "update" "temp" "misc" "minor changes" "bugfix" "wip")
+
 
 # ---------- 1. Проверка типа коммита ----------
-ALLOWED_TYPES="fix|refactor|test"
-
-if ! [[ $COMMIT_MSG =~ ^($ALLOWED_TYPES): ]]; then
-    echo "Ошибка: сообщение коммита должно начинаться с одного из типов: fix:, refactor:, test:, docs:"
+if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}) ]]; then
+    echo "Ошибка: сообщение должно начинаться с одного из следующих типов коммита: ${ALLOWED_COMMIT_TYPES}"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
-# ---------- 2. Проверка JIRA-таски ----------
-if ! [[ $COMMIT_MSG =~ ^($ALLOWED_TYPES):\ \[OSG-[0-9]+\] ]]; then
-    echo "Ошибка: после типа коммита должна идти ссылка на задачу в формате [OSG-123]"
+# ---------- 2. Проверка на отсутствие двоеточия после типа коммита ----------
+if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}): ]]; then
+    echo "Ошибка: после типа коммита должно находиться двоеточие"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    exit 1
+fi
+# ---------- 2.1. Проверка на наличие единственного двоеточия после типа коммита ----------
+if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):{2,} ]]; then
+    echo "Ошибка: после типа коммита должно находиться только одно двоеточие"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
-# ---------- 3. Проверка содержательности сообщения ----------
-MESSAGE_BODY=$(echo "$COMMIT_MSG" | sed -E "s/^($ALLOWED_TYPES):\ \[OSG-[0-9]+\]//")
-BAD_MESSAGES=("fix bug" "do smth" "test" "update" "temp" "misc")
-
-if [[ -z "${MESSAGE_BODY}" || "${MESSAGE_BODY}" =~ ^[[:space:]]*$ ]]; then
-     echo "Ошибка: кажется, вы забыли написать пояснительный текст к коммиту"
-     exit 1
+# ---------- 3. Проверка отсутствие пробела после двоеточия ----------
+if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):[[:space:]] ]]; then
+    echo "Ошибка: перед задачей должен находиться пробел"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    exit 1
+fi
+# ---------- 3.1. Проверка на наличие единственного пробела после двоеточия ----------
+if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):[[:space:]]{2,} ]]; then
+    echo "Ошибка: перед задачей должен находиться только один пробел"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    exit 1
 fi
 
-for bad in "${BAD_MESSAGES[@]}"; do
-    if [[ "${MESSAGE_BODY,,}" == "$bad" ]]; then
-        echo "Ошибка: сообщение коммита слишком общое/неинформативное: \"$MESSAGE_BODY\""
+# ---------- 4. Проверка на наличие задачи ----------
+if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):\ \[${PREFIX_TASK_NAME}-[0-9]+\] ]]; then
+    echo "Ошибка: после типа коммита ожидается задача в формате [${PREFIX_TASK_NAME}-123]"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    exit 1
+fi
+
+# ---------- 5. Проверка отсутствие пробела после задачи ----------
+if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):\ \[${PREFIX_TASK_NAME}-[0-9]+\]\  ]]; then
+    echo "Ошибка: после задачи должен находится пробел"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    exit 1
+fi
+# ---------- 5.1 Проверка на наличие единственного пробела после задачи ----------
+if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):\ \[${PREFIX_TASK_NAME}-[0-9]+\]\ {2,} ]]; then
+    echo "Ошибка: после задачи должен находится только один пробел"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    exit 1
+fi
+
+# ---------- 6. Проверка на то, что тело сообщения - не пустое ----------
+NOT_TRIM_MESSAGE_BODY=$(echo "${COMMIT_MSG}" | sed -E "s/^(${ALLOWED_COMMIT_TYPES}):\ \[${PREFIX_TASK_NAME}-[0-9]+\]//")
+MESSAGE_BODY="$(echo -e "${NOT_TRIM_MESSAGE_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+if [[ -z "${MESSAGE_BODY}" ]]; then
+    echo "Ошибка: тело сообщения коммита - пустое. Добавьте описание коммита"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    exit 1
+fi
+
+# ---------- 7. Проверка на наличие "мусорных фраз" в теле сообщения коммита ----------
+LOWERCASE_MESSAGE_BODY="${MESSAGE_BODY,,}"
+for bad_message in "${BAD_BODY_COMMIT_MESSAGES[@]}"; do
+    if [[ "${LOWERCASE_MESSAGE_BODY}" == "$bad_message" ]]; then
+        echo "Ошибка: тело сообщения содержит слишком общую / неинформативную фразу: \"$MESSAGE_BODY\""
+        echo "Пожалуйста, опиши более конкретно свои изменения"
         exit 1
     fi
 done
 
+# ---------- 8. Проверка на длину тела сообщения коммита ----------
+LEN_MESSAGE_BODY=${#MESSAGE_BODY}
+if (( LEN_MESSAGE_BODY > 100 )); then
+    echo "Ошибка: текущая длина тела сообщения коммита: ${LEN_MESSAGE_BODY}. Это превышает лимит в 100 символов)."
+    echo "Пожалуйста, опиши свои изменения более компактно"
+    exit 1
+fi
+
 # Все проверки прошли, сообщение коммита валидное
 exit 0
+
