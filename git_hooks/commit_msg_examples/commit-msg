@@ -39,7 +39,7 @@ ROW_COMMIT_MSG=$(cat "$MSG_FILE")
 COMMIT_MSG=$(echo "$ROW_COMMIT_MSG" | tr -d '\r')  # CRLF -> LF
 
 # Переменные, в которых без проблем можно поменять значения на свой взгляд
-ALLOWED_COMMIT_TYPES="fix|refactor|test"
+ALLOWED_COMMIT_TYPES="fix:|refactor:|test:"
 PREFIX_TASK_NAME="OSG"
 EXAMPLE_GOOD_COMMIT_MESSAGE="Пример хорошего коммита «fix: [${PREFIX_TASK_NAME}-1194] для 1С реализовал метод 'calculateDevSalary()', который увеличивает зарплату программистам вдвое»"
 BAD_BODY_COMMIT_MESSAGES=("fix bug" "do smth" "test" "update" "temp" "misc" "minor changes" "bugfix" "wip")
@@ -47,59 +47,67 @@ BAD_BODY_COMMIT_MESSAGES=("fix bug" "do smth" "test" "update" "temp" "misc" "min
 
 # ---------- 1. Проверка типа коммита ----------
 if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}) ]]; then
-    echo "Ошибка: сообщение должно начинаться с одного из следующих типов коммита: ${ALLOWED_COMMIT_TYPES}"
+    echo "Ошибка: сообщение коммита должно начинаться с одного из следующих префиксов: ${ALLOWED_COMMIT_TYPES}"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
-# ---------- 2. Проверка на отсутствие двоеточия после типа коммита ----------
-if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}): ]]; then
-    echo "Ошибка: после типа коммита должно находиться двоеточие"
-    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
-    exit 1
-fi
-# ---------- 2.1. Проверка на наличие единственного двоеточия после типа коммита ----------
+# ---------- 2. Проверка на наличие единственного двоеточия после типа коммита ----------
 if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):{2,} ]]; then
     echo "Ошибка: после типа коммита должно находиться только одно двоеточие"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
-# ---------- 3. Проверка отсутствие пробела после двоеточия ----------
-if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):[[:space:]] ]]; then
-    echo "Ошибка: перед задачей должен находиться пробел"
+# ---------- 3. Проверка на отсутствие задачи и описания изменений ----------
+if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]*$ ]]; then
+    echo "Ошибка: помимо префикса, в сообщении коммита обязательно должны присутствовать задача и описание изменений"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
-# ---------- 3.1. Проверка на наличие единственного пробела после двоеточия ----------
-if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):[[:space:]]{2,} ]]; then
+
+# ---------- 4. Проверка отсутствие пробела после двоеточия ----------
+if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]] ]]; then
+    echo "Ошибка: перед задачей должен находиться один пробел и никаких лишних символов"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    exit 1
+fi
+# ---------- 4.1. Проверка на наличие единственного пробела после двоеточия ----------
+if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]{2,} ]]; then
     echo "Ошибка: перед задачей должен находиться только один пробел"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
-# ---------- 4. Проверка на наличие задачи ----------
-if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):\ \[${PREFIX_TASK_NAME}-[0-9]+\] ]]; then
+# ---------- 5. Проверка на наличие задачи ----------
+if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\] ]]; then
     echo "Ошибка: после типа коммита ожидается задача в формате [${PREFIX_TASK_NAME}-123]"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
-# ---------- 5. Проверка отсутствие пробела после задачи ----------
-if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):\ \[${PREFIX_TASK_NAME}-[0-9]+\]\  ]]; then
-    echo "Ошибка: после задачи должен находится пробел"
+#----------- 6. Проверка на отсутствие описания изменений ---------- 
+if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\][[:space:]]*$ ]]; then
+    echo "Ошибка: помимо префикса и задачи, в сообщении коммита обязательно должно присутствовать описание изменений"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
-# ---------- 5.1 Проверка на наличие единственного пробела после задачи ----------
-if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):\ \[${PREFIX_TASK_NAME}-[0-9]+\]\ {2,} ]]; then
+
+# ---------- 7. Проверка отсутствие пробела после задачи ----------
+if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\][[:space:]] ]]; then
+    echo "Ошибка: после задачи должен находится один пробел и никаких лишних символов"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    exit 1
+fi
+# ---------- 7.1 Проверка на наличие единственного пробела после задачи ----------
+if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\][[:space:]]{2,} ]]; then
     echo "Ошибка: после задачи должен находится только один пробел"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
-# ---------- 6. Проверка на то, что тело сообщения - не пустое ----------
-NOT_TRIM_MESSAGE_BODY=$(echo "${COMMIT_MSG}" | sed -E "s/^(${ALLOWED_COMMIT_TYPES}):\ \[${PREFIX_TASK_NAME}-[0-9]+\]//")
+# ---------- 8. Проверка на то, что тело сообщения - не пустое ----------
+NOT_TRIM_MESSAGE_BODY=$(echo "${COMMIT_MSG}" | sed -E "s/^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\]//")
 MESSAGE_BODY="$(echo -e "${NOT_TRIM_MESSAGE_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 if [[ -z "${MESSAGE_BODY}" ]]; then
     echo "Ошибка: тело сообщения коммита - пустое. Добавьте описание коммита"
@@ -107,7 +115,7 @@ if [[ -z "${MESSAGE_BODY}" ]]; then
     exit 1
 fi
 
-# ---------- 7. Проверка на наличие "мусорных фраз" в теле сообщения коммита ----------
+# ---------- 9. Проверка на наличие "мусорных фраз" в теле сообщения коммита ----------
 LOWERCASE_MESSAGE_BODY="${MESSAGE_BODY,,}"
 for bad_message in "${BAD_BODY_COMMIT_MESSAGES[@]}"; do
     if [[ "${LOWERCASE_MESSAGE_BODY}" == "$bad_message" ]]; then
@@ -117,7 +125,7 @@ for bad_message in "${BAD_BODY_COMMIT_MESSAGES[@]}"; do
     fi
 done
 
-# ---------- 8. Проверка на длину тела сообщения коммита ----------
+# ---------- 10. Проверка на длину тела сообщения коммита ----------
 LEN_MESSAGE_BODY=${#MESSAGE_BODY}
 if (( LEN_MESSAGE_BODY > 100 )); then
     echo "Ошибка: текущая длина тела сообщения коммита: ${LEN_MESSAGE_BODY}. Это превышает лимит в 100 символов)."
@@ -127,4 +135,3 @@ fi
 
 # Все проверки прошли, сообщение коммита валидное
 exit 0
-
