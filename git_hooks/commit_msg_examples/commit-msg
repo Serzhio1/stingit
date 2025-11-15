@@ -107,16 +107,7 @@ if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NA
     exit 1
 fi
 
-# ---------- 8. Проверка на то, что тело сообщения - не пустое ----------
-NOT_TRIM_MESSAGE_BODY=$(echo "${COMMIT_MSG}" | sed -E "s/^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\]//")
-MESSAGE_BODY="$(echo -e "${NOT_TRIM_MESSAGE_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
-if [[ -z "${MESSAGE_BODY}" ]]; then
-    echo "Ошибка: тело сообщения коммита - пустое. Добавьте описание коммита"
-    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
-    exit 1
-fi
-
-# ---------- 9. Проверка на наличие "мусорных фраз" в теле сообщения коммита ----------
+# ---------- 8. Проверка на наличие "мусорных фраз" в теле сообщения коммита ----------
 LOWERCASE_MESSAGE_BODY="${MESSAGE_BODY,,}"
 for bad_message in "${BAD_BODY_COMMIT_MESSAGES[@]}"; do
     if [[ "${LOWERCASE_MESSAGE_BODY}" == "$bad_message" ]]; then
@@ -126,7 +117,7 @@ for bad_message in "${BAD_BODY_COMMIT_MESSAGES[@]}"; do
     fi
 done
 
-# ---------- 10. Проверка на длину тела сообщения коммита ----------
+# ---------- 9. Проверка на длину тела сообщения коммита ----------
 LEN_COMMIT_MSG=${#COMMIT_MSG}
 echo "${COMMIT_MSG}"
 if (( LEN_COMMIT_MSG > MAX_LEN_COMMIT_MESSAGE )); then
