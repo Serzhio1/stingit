@@ -41,6 +41,7 @@ COMMIT_MSG=$(echo "$ROW_COMMIT_MSG" | tr -d '\r')  # CRLF -> LF
 # Переменные, в которых без проблем можно поменять значения на свой взгляд
 ALLOWED_COMMIT_TYPES="fix:|refactor:|test:"
 PREFIX_TASK_NAME="OSG"
+MAX_LEN_COMMIT_MESSAGE=250
 EXAMPLE_GOOD_COMMIT_MESSAGE="Пример хорошего коммита «fix: [${PREFIX_TASK_NAME}-1194] для 1С реализовал метод 'calculateDevSalary()', который увеличивает зарплату программистам вдвое»"
 BAD_BODY_COMMIT_MESSAGES=("fix bug" "do smth" "test" "update" "temp" "misc" "minor changes" "bugfix" "wip")
 
@@ -119,16 +120,17 @@ fi
 LOWERCASE_MESSAGE_BODY="${MESSAGE_BODY,,}"
 for bad_message in "${BAD_BODY_COMMIT_MESSAGES[@]}"; do
     if [[ "${LOWERCASE_MESSAGE_BODY}" == "$bad_message" ]]; then
-        echo "Ошибка: тело сообщения содержит слишком общую / неинформативную фразу: \"$MESSAGE_BODY\""
+        echo "Ошибка: тело сообщения содержит слишком общую / неинформативную фразу: ${MESSAGE_BODY}"
         echo "Пожалуйста, опиши более конкретно свои изменения"
         exit 1
     fi
 done
 
 # ---------- 10. Проверка на длину тела сообщения коммита ----------
-LEN_MESSAGE_BODY=${#MESSAGE_BODY}
-if (( LEN_MESSAGE_BODY > 100 )); then
-    echo "Ошибка: текущая длина тела сообщения коммита: ${LEN_MESSAGE_BODY}. Это превышает лимит в 100 символов)."
+LEN_COMMIT_MSG=${#COMMIT_MSG}
+echo "${COMMIT_MSG}"
+if (( LEN_COMMIT_MSG > MAX_LEN_COMMIT_MESSAGE )); then
+    echo "Ошибка: текущая длина сообщения коммита: ${LEN_COMMIT_MSG}. Это превышает лимит в ${MAX_LEN_COMMIT_MESSAGE} символов)."
     echo "Пожалуйста, опиши свои изменения более компактно"
     exit 1
 fi
