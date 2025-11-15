@@ -34,9 +34,9 @@
 
 
 # Переменные, в которых не стоит менять значения
-MSG_FILE=$1
-ROW_COMMIT_MSG=$(cat "$MSG_FILE")
-COMMIT_MSG=$(echo "$ROW_COMMIT_MSG" | tr -d '\r')  # CRLF -> LF
+COMMIT_MESSAGE_FILE=$1
+ROW_COMMIT_MESSAGE=$(cat "$MESSAGE_FILE")
+COMMIT_MESSAGE=$(echo "$ROW_COMMIT_MESSAGE" | tr -d '\r')  # CRLF -> LF
 
 # Переменные, в которых без проблем можно поменять значения на свой взгляд
 ALLOWED_COMMIT_TYPES="fix:|refactor:|test:"
@@ -47,61 +47,61 @@ BAD_BODY_COMMIT_MESSAGES=("fix bug" "do smth" "test" "update" "temp" "misc" "min
 
 
 # ---------- 1. Проверка типа коммита ----------
-if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}) ]]; then
+if ! [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES}) ]]; then
     echo "Ошибка: сообщение коммита должно начинаться с одного из следующих типов с двоеточием: ${ALLOWED_COMMIT_TYPES}"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
 # ---------- 2. Проверка на наличие единственного двоеточия после типа коммита ----------
-if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES}):{2,} ]]; then
+if [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES}):{2,} ]]; then
     echo "Ошибка: после типа коммита должно находиться только одно двоеточие"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
 # ---------- 3. Проверка на отсутствие задачи и описания изменений ----------
-if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]*$ ]]; then
+if [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]*$ ]]; then
     echo "Ошибка: помимо типа коммита, в сообщении обязательно должны присутствовать задача и описание изменений"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
 # ---------- 4. Проверка отсутствие пробела после двоеточия ----------
-if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]] ]]; then
+if ! [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]] ]]; then
     echo "Ошибка: перед задачей должен находиться один пробел и никаких лишних символов"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 # ---------- 4.1. Проверка на наличие единственного пробела после двоеточия ----------
-if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]{2,} ]]; then
+if [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]{2,} ]]; then
     echo "Ошибка: перед задачей должен находиться только один пробел"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
 # ---------- 5. Проверка на наличие задачи ----------
-if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\] ]]; then
+if ! [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\] ]]; then
     echo "Ошибка: после типа коммита ожидается задача в формате [${PREFIX_TASK_NAME}-123]"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
 #----------- 6. Проверка на отсутствие описания изменений ---------- 
-if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\][[:space:]]*$ ]]; then
+if [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\][[:space:]]*$ ]]; then
     echo "Ошибка: помимо типа коммита и задачи, в сообщении обязательно должно присутствовать описание изменений"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
 # ---------- 7. Проверка отсутствие пробела после задачи ----------
-if ! [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\][[:space:]] ]]; then
+if ! [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\][[:space:]] ]]; then
     echo "Ошибка: после задачи должен находится один пробел и никаких лишних символов"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 # ---------- 7.1 Проверка на наличие единственного пробела после задачи ----------
-if [[ "${COMMIT_MSG}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\][[:space:]]{2,} ]]; then
+if [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]\[${PREFIX_TASK_NAME}-[0-9]+\][[:space:]]{2,} ]]; then
     echo "Ошибка: после задачи должен находится только один пробел"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
@@ -118,13 +118,13 @@ for bad_message in "${BAD_BODY_COMMIT_MESSAGES[@]}"; do
 done
 
 # ---------- 9. Проверка на длину тела сообщения коммита ----------
-LEN_COMMIT_MSG=${#COMMIT_MSG}
-echo "${COMMIT_MSG}"
-if (( LEN_COMMIT_MSG > MAX_LEN_COMMIT_MESSAGE )); then
-    echo "Ошибка: текущая длина сообщения коммита: ${LEN_COMMIT_MSG}. Это превышает лимит в ${MAX_LEN_COMMIT_MESSAGE} символов)."
+LEN_COMMIT_MESSAGE=${#COMMIT_MESSAGE}
+if (( LEN_COMMIT_MESSAGE > MAX_LEN_COMMIT_MESSAGE )); then
+    echo "Ошибка: текущая длина сообщения коммита: ${LEN_COMMIT_MESSAGE}. Это превышает лимит в ${MAX_LEN_COMMIT_MESSAGE} символов)."
     echo "Пожалуйста, опиши свои изменения более компактно"
     exit 1
 fi
 
 # Все проверки прошли, сообщение коммита валидное
 exit 0
+
