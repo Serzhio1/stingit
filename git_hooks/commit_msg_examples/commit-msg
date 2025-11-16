@@ -43,8 +43,8 @@ COMMIT_MESSAGE=$(echo "$ROW_COMMIT_MESSAGE" | tr -d '\r')  # CRLF -> LF
 ALLOWED_COMMIT_TYPES="fix:|refactor:|test:"
 PREFIX_TASK_NAME="OSG"
 MAX_LEN_COMMIT_MESSAGE=250
-MIN_COMMIT_MESSAGE_BODY_WORDS=3
-MIN_COMMIT_MESSAGE_BODY_CHARS=10
+MIN_COMMIT_MESSAGE_BODY_WORDS=5
+MIN_COMMIT_MESSAGE_BODY_CHARS=30
 EXAMPLE_GOOD_COMMIT_MESSAGE="Пример хорошего коммита «fix: [${PREFIX_TASK_NAME}-1194] написал  метод 'calcDevSalary()', который увеличивает зарплату программистам вдвое»"
 
 
@@ -118,7 +118,7 @@ fi
 
 # ---------- 8. Проверка на минимальное количество символов в теле сообщения коммита ----------
 if (( CHAR_COUNT_IN_COMMIT_MESSAGE_BODY < MIN_COMMIT_MESSAGE_BODY_CHARS )); then
-    echo "Ошибка: описание изменений должно состоять более, чем из ${MIN_COMMIT_MESSAGE_BODY_CHARS} символов"
+    echo "Ошибка: описание изменений должно состоять более, чем из ${MIN_COMMIT_MESSAGE_BODY_CHARS} символов. Сейчас - ${CHAR_COUNT_IN_COMMIT_MESSAGE_BODY}"
     echo "Пример: ${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
