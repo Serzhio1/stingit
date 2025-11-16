@@ -21,21 +21,21 @@
 # Примеры сообщений, которые вызовут ошибку:
 #  - fix bug
 #  - do smth
-#  - test: [OSG-123] 
+#  - test: [OSG-123]
 #  - update [OSG-12] minor changes
 #
 # Важно:
 #  - Этот скрипт выполняется на этапе "commit", после того как сообщение коммита сформировано
 #  - Скрипт должен называться ровно: "commit-msg", и никак иначе
-#  - Скрипт должен находиться в каталоге: ".git/hooks/", и нигде иначе 
+#  - Скрипт должен находиться в каталоге: ".git/hooks/", и нигде иначе
 #  - Файл должен быть исполняемым (chmod +x)
 #
 # ============================================================
 
 
 # Переменные, в которых не стоит менять значения
-COMMIT_MESSAGE_FILE=$1
-ROW_COMMIT_MESSAGE=$(cat "$COMMIT_MESSAGE_FILE")
+COMMIT_MESSAGE_FILE="$1"
+ROW_COMMIT_MESSAGE=$(<"$COMMIT_MESSAGE_FILE")
 COMMIT_MESSAGE=$(echo "$ROW_COMMIT_MESSAGE" | tr -d '\r')  # CRLF -> LF
 
 # Переменные, в которых без проблем можно поменять значения на свой взгляд
@@ -44,8 +44,7 @@ PREFIX_TASK_NAME="OSG"
 MAX_LEN_COMMIT_MESSAGE=250
 MIN_COMMIT_MESSAGE_BODY_WORDS=3
 MIN_COMMIT_MESSAGE_BODY_CHARS=10
-EXAMPLE_GOOD_COMMIT_MESSAGE="Пример хорошего коммита «fix: [${PREFIX_TASK_NAME}-1194] для 1С реализовал метод 'calculateDevSalary()', который увеличивает зарплату программистам вдвое»"
-BAD_BODY_COMMIT_MESSAGES=("fix bug" "do smth" "test" "update" "temp" "misc" "minor changes" "bugfix" "wip")
+EXAMPLE_GOOD_COMMIT_MESSAGE="Пример хорошего коммита «fix: [${PREFIX_TASK_NAME}-1194] написал  метод 'calcDevSalary()', который увеличивает зарплату программистам вдвое»"
 
 
 # ---------- 1. Проверка на наличие разрешенного типа коммита ----------
@@ -68,6 +67,7 @@ if ! [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]] ]]; then
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
+
 # ---------- 3.1. Проверка на наличие единственного пробела после двоеточия ----------
 if [[ "${COMMIT_MESSAGE}" =~ ^(${ALLOWED_COMMIT_TYPES})[[:space:]]{2,} ]]; then
     echo "Ошибка: перед задачей должен находиться только один пробел"
@@ -122,23 +122,14 @@ if (( CHAR_COUNT_IN_COMMIT_MESSAGE_BODY < MIN_COMMIT_MESSAGE_BODY_CHARS )); then
     exit 1
 fi
 
-# ---------- 9. Проверка на наличие "мусорных фраз" в теле сообщения коммита ----------
-LOWERCASE_COMMIT_MESSAGE_BODY="${COMMIT_MESSAGE_BODY,,}"
-for bad_message in "${BAD_BODY_COMMIT_MESSAGES[@]}"; do
-    if [[ "${LOWERCASE_COMMIT_MESSAGE_BODY}" == "$bad_message" ]]; then
-        echo "Ошибка: тело сообщения содержит слишком общую / неинформативную фразу: ${COMMIT_MESSAGE_BODY}"
-        echo "Пожалуйста, опиши более конкретно свои изменения"
-        exit 1
-    fi
-done
-
-# ---------- 10. Проверка на максимальную длину тела сообщения коммита ----------
+# ---------- 9. Проверка на максимальное количество символов в сообщении коммита ----------
 LEN_COMMIT_MESSAGE=${#COMMIT_MESSAGE}
 if (( LEN_COMMIT_MESSAGE > MAX_LEN_COMMIT_MESSAGE )); then
-    echo "Ошибка: текущая длина сообщения коммита: ${LEN_COMMIT_MESSAGE}. Это превышает лимит в ${MAX_LEN_COMMIT_MESSAGE} символов)."
+    echo "Ошибка: текущая длина сообщения коммита: ${LEN_COMMIT_MESSAGE}. Это превышает лимит в ${MAX_LEN_COMMIT_MESSAGE} символов"
     echo "Пожалуйста, опиши свои изменения более компактно"
     exit 1
 fi
 
 # Все проверки прошли, сообщение коммита валидное
 exit 0
+
