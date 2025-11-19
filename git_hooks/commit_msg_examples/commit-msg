@@ -112,14 +112,14 @@ CHAR_COUNT_IN_COMMIT_MESSAGE_BODY=$(echo -n "${COMMIT_MESSAGE_BODY}" | wc -m)
 # ---------- 7. Проверка на минимальное количество слов в теле сообщения коммита ----------
 if (( WORD_COUNT_IN_COMMIT_MESSAGE_BODY < MIN_COMMIT_MESSAGE_BODY_WORDS )); then
     echo "Ошибка: описание изменений должно состоять более, чем из ${MIN_COMMIT_MESSAGE_BODY_WORDS} слов"
-    echo "Пример: ${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
 # ---------- 8. Проверка на минимальное количество символов в теле сообщения коммита ----------
 if (( CHAR_COUNT_IN_COMMIT_MESSAGE_BODY < MIN_COMMIT_MESSAGE_BODY_CHARS )); then
     echo "Ошибка: описание изменений должно состоять более, чем из ${MIN_COMMIT_MESSAGE_BODY_CHARS} символов. Сейчас - ${CHAR_COUNT_IN_COMMIT_MESSAGE_BODY}"
-    echo "Пример: ${EXAMPLE_GOOD_COMMIT_MESSAGE}"
+    echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
 
