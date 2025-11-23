@@ -47,7 +47,7 @@ COMMIT_MESSAGE=$(echo "$ROW_COMMIT_MESSAGE" | tr -d '\r')  # CRLF -> LF
 ALLOWED_COMMIT_TYPES="fix:|refactor:|test:"
 PREFIX_TASK_NAME="OSG"
 MAX_LEN_COMMIT_MESSAGE=250
-MIN_COUNT_WORDS_IN_DESCRIPTION_CHANGES=5
+MIN_COUNT_WORDS_IN_DESCRIPTION_CHANGES=4
 MIN_COUNT_CHARS_IN_DESCRIPTION_CHANGES=30
 EXAMPLE_GOOD_COMMIT_MESSAGE="Пример хорошего коммита «fix: [${PREFIX_TASK_NAME}-1194] написал  метод 'calcDevSalary()', который увеличивает зарплату программистам вдвое»"
 
@@ -114,8 +114,8 @@ COUNT_WORDS_IN_DESCRIPTION_CHANGES=$(echo "${DESCRIPTION_CHANGES}" | wc -w)
 COUNT_CHARS_IN_DESCRIPTION_CHANGES=$(echo -n "${DESCRIPTION_CHANGES}" | wc -m)
 
 # ---------- 7. Проверка на минимальное количество слов в описании изменений ----------
-if (( COUNT_WORDS_IN_DESCRIPTION_CHANGES < MIN_COUNT_WORDS_IN_DESCRIPTION_CHANGES )); then
-    echo "Ошибка: описание изменений должно состоять более, чем из ${MIN_COUNT_WORDS_IN_DESCRIPTION_CHANGES} слов"
+if (( COUNT_WORDS_IN_DESCRIPTION_CHANGES <= MIN_COUNT_WORDS_IN_DESCRIPTION_CHANGES )); then
+    echo "Ошибка: описание изменений должно состоять более, чем из ${MIN_COUNT_WORDS_IN_DESCRIPTION_CHANGES} слов. Сейчас - ${COUNT_WORDS_IN_DESCRIPTION_CHANGES}"
     echo "${EXAMPLE_GOOD_COMMIT_MESSAGE}"
     exit 1
 fi
