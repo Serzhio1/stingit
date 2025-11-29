@@ -1,4 +1,4 @@
-![](image_2025-11-28_23-47-12.png)
+<img width="1024" height="1024" alt="image_2025-11-28_23-47-12" src="https://github.com/user-attachments/assets/9f26ff51-0bc8-4682-95fc-47cc20599f7a" />
 
 # Stingit  
 Stingit - это набор кастомных git hooks, которые будут вас больно жалить, чтобы добиться повышения качества разработки
