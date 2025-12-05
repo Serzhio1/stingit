@@ -36,17 +36,17 @@ stingit/
 ├── README.md 
 │
 ├── commit-msg-hook/
-│   ├── commit-msg-README.md
+│   ├── README.md
 │   ├── commit-msg
 │   └── commit-msg-tests/
 │
 ├── pre-commit-hook/
-│   ├── pre-commit-README.md
+│   ├── README.md
 │   ├── pre-commit
 │   └── pre-commit-tests/
 │
 ├── pre-merge-commit-hook/
-│   ├── pre-merge-commit-README.md
+│   ├── README.md
 │   ├── pre-merge-commit
 │   └── pre-merge-commit-tests/
 │
@@ -79,4 +79,4 @@ chmod +x commit-msg
 
 ## Обратная связь
 
-Следи за обновлениями и сообщай обратную связь по Stingit в [Telegram-канале](https://t.me/stingit)
+Следи за обновлениями и сообщай обратную связь по Stingit в [Telegram-канале «Stingit»](https://t.me/stingit)
